@@ -56,11 +56,34 @@ A Python script that discovers all Azure OpenAI and AI Services resources across
 
 ## Usage
 
-Run the script:
+**Default — previous calendar month (no arguments needed):**
 
 ```bash
 python tokensv2.py
 ```
+
+**Specific month:**
+
+```bash
+python tokensv2.py --start-date 2026-01-01 --end-date 2026-01-31
+```
+
+**Custom date range:**
+
+```bash
+python tokensv2.py --start-date 2025-10-01 --end-date 2025-12-31
+```
+
+**Show help:**
+
+```bash
+python tokensv2.py --help
+```
+
+| Parameter | Format | Default |
+|-----------|--------|---------|
+| `--start-date` | `YYYY-MM-DD` | First day of previous month |
+| `--end-date` | `YYYY-MM-DD` | Last day of previous month |
 
 The script will:
 
@@ -69,8 +92,6 @@ The script will:
 3. Query `ProcessedPromptTokens` (input) and `GeneratedTokens` (output) metrics for each resource.
 4. Map deployment names to model names via the Azure Cognitive Services deployment API.
 5. Export a CSV file in the working directory.
-
-> **Note:** Edit the `start_date` and `end_date` variables in `main()` to change the analysis period.
 
 ## Sample Output
 

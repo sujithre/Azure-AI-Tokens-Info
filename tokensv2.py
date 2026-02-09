@@ -11,10 +11,52 @@ import subprocess
 import json
 import csv
 import platform
+import argparse
 from datetime import datetime, timedelta
+from calendar import monthrange
 from azure.identity import AzureCliCredential
 from azure.mgmt.resourcegraph import ResourceGraphClient
 from azure.mgmt.resourcegraph.models import QueryRequest
+
+def parse_arguments():
+    """
+    Parse command-line arguments for date range
+    Defaults to the previous calendar month if no arguments provided
+    """
+    # Calculate previous month as default
+    today = datetime.now()
+    first_of_current = today.replace(day=1)
+    last_of_prev = first_of_current - timedelta(days=1)
+    first_of_prev = last_of_prev.replace(day=1)
+
+    parser = argparse.ArgumentParser(
+        description="Azure OpenAI Token Analysis - Extracts monthly token usage and exports to CSV"
+    )
+    parser.add_argument(
+        "--start-date",
+        type=str,
+        default=first_of_prev.strftime("%Y-%m-%d"),
+        help="Start date in YYYY-MM-DD format (default: first day of previous month)"
+    )
+    parser.add_argument(
+        "--end-date",
+        type=str,
+        default=last_of_prev.strftime("%Y-%m-%d"),
+        help="End date in YYYY-MM-DD format (default: last day of previous month)"
+    )
+
+    args = parser.parse_args()
+
+    try:
+        start = datetime.strptime(args.start_date, "%Y-%m-%d").replace(hour=0, minute=1)
+        end = datetime.strptime(args.end_date, "%Y-%m-%d").replace(hour=23, minute=59)
+    except ValueError as e:
+        parser.error(f"Invalid date format: {e}. Use YYYY-MM-DD.")
+
+    if start > end:
+        parser.error("Start date must be before end date.")
+
+    return start, end
 
 def get_az_command():
     """
@@ -435,9 +477,8 @@ def main():
         return
    
 
-    # Set date range for the analysis period
-    start_date = datetime(2026, 1, 1, 0, 1, 0)
-    end_date = datetime(2026, 1, 31, 23, 59, 0)
+    # Parse date range from command-line arguments
+    start_date, end_date = parse_arguments()
    
     print(f"📅 Analysis Period: {start_date.strftime('%B %d, %Y')} to {end_date.strftime('%B %d, %Y')}")
    
